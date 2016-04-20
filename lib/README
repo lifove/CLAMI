@@ -1,0 +1,4 @@
+Required libraries
+- commons-math3-3.3.jar
+- guava-14.0.1.jar
+- weka3.7.9.jar

@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<project name="Ant-Test" default="jar" basedir=".">
+	<!-- Sets variables which can later be used. -->
+	<!-- The value of a property is accessed via ${} -->
+	<property name="src.dir" location="src" />
+	<property name="lib.dir" location="lib" />
+	<property name="lib2.dir" location="../../../mybin/JCTools/dist" />
+	<property name="build.dir" location="bin" />
+	<property name="dist.dir" location="dist" />
+	<property name="docs.dir" location="docs" />
+
+	<!--
+    Create a classpath container which can be later used in the ant task
+  	-->
+	<path id="build.classpath">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${lib2.dir}">
+                        <include name="**/*.jar" />
+                </fileset>
+	</path>
+
+	<!-- Deletes the existing build, docs and dist directory-->
+	<target name="clean">
+		<delete dir="${build.dir}" />
+		<delete dir="${docs.dir}" />
+		<!--<delete dir="${dist.dir}" />-->
+	</target>
+
+	<!-- Creates the  build, docs and dist directory-->
+	<target name="makedir">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${docs.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+
+	<!-- Compiles the java code (including the usage of library for JUnit -->
+	<target name="compile" depends="clean, makedir">
+		<javac srcdir="${src.dir}" debug="true" destdir="${build.dir}" classpathref="build.classpath">
+		</javac>
+
+	</target>
+
+	<!-- Creates Javadoc -->
+	<target name="docs" depends="compile">
+		<javadoc packagenames="src" sourcepath="${src.dir}" destdir="${docs.dir}">
+			<!-- Define which files / directory should get included, we include all -->
+			<fileset dir="${src.dir}">
+				<include name="**" />
+			</fileset>
+		</javadoc>
+	</target>
+
+	<!--Creates the deployable jar file  -->
+	<target name="jar" depends="compile">
+		<jar destfile="${dist.dir}\SelfTrainer.jar" basedir="${build.dir}">
+			<zipgroupfileset dir="${lib.dir}" includes="*.jar"/>
+			<manifest>
+				<attribute name="Main-Class" value="test.Main" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="main" depends="compile, jar, docs">
+		<description>Main target</description>
+	</target>
+
+</project>
