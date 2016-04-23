@@ -17,5 +17,7 @@ gradle-app.setting
 .project
 .settings/
 
+bin
+
 # Mac
 .DS_Store
