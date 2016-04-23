@@ -9,6 +9,9 @@
 
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = "net.lifove.clami.CLAMI"
 
 // In this section you declare where to find the dependencies of your project
 repositories {
@@ -31,3 +34,19 @@ dependencies {
     // commons-cli
     compile 'commons-cli:commons-cli:1.3.1'
 }
+
+//version = '0.0'
+//sourceCompatibility = 1.8
+//targetCompatibility = 1.8
+
+//create a single Jar with all dependencies
+//task fatJar(type: Jar) {
+//	manifest {
+//       attributes 'Implementation-Title': 'CLAMI jar file',  
+//        	'Implementation-Version': version,
+//        	'Main-Class': 'net.lifove.clami.CLAMI'
+//    }
+//    baseName = project.name + '-all'
+//    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+//    with jar
+//}
