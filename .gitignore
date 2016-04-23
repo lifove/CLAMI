@@ -1,0 +1,21 @@
+# Created by https://www.gitignore.io/api/ava,gradle
+
+#!! ERROR: ava is undefined. Use list command to see defined gitignore types !!#
+
+### Gradle ###
+.gradle
+build/
+
+# Ignore Gradle GUI config
+gradle-app.setting
+
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Mac
+.DS_Store
