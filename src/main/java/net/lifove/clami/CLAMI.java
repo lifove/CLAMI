@@ -64,10 +64,12 @@ public class CLAMI {
 		        .required()
 		        .build());
 		options.addOption(Option.builder("p").longOpt("poslabel")
-		        .desc("String value of buggy label")
+		        .desc("String value of buggy label. Since CLA/CLAMI works for unlabeld data (in case of weka arff files, labeled as '?',"
+		        		+ " it is not necessary to use this option. "
+		        		+ "However, if the data file is labeled, "
+		        		+ "it will show prediction results in terms of precision, recall, and f-measure for evaluation puerpose.")
 		        .hasArg()
 		        .argName("attribute value")
-		        .required()
 		        .build());
 		options.addOption(Option.builder("m").longOpt("clami")
 		        .desc("Run CLAMI instead of CLA")
