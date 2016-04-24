@@ -4,6 +4,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.MissingArgumentException;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -33,17 +34,20 @@ public class CLAMI {
 		Options options = createOptions();
 		
 		if(args.length < 3){
-
-			// automatically generate the help statement
-			HelpFormatter formatter = new HelpFormatter();
-			String header = "Execute CLA/CLAMI unsuprvised defect predicition. On Windows, use CLAMI.bat instead of ./CLAMI";
-			String footer ="\nPlease report issues at https://github.com/lifove/CLAMI/issues";
-			formatter.printHelp( "./CLAMI", header, options, footer, true);
+			printHelp(options);
 		}
 		else{
 			parseOptions(options, args);
 		}
 		
+	}
+
+	private void printHelp(Options options) {
+		// automatically generate the help statement
+		HelpFormatter formatter = new HelpFormatter();
+		String header = "Execute CLA/CLAMI unsuprvised defect predicition. On Windows, use CLAMI.bat instead of ./CLAMI";
+		String footer ="\nPlease report issues at https://github.com/lifove/CLAMI/issues";
+		formatter.printHelp( "./CLAMI", header, options, footer, true);
 	}
 	
 	Options createOptions(){
@@ -94,7 +98,7 @@ public class CLAMI {
 			forCLAMI = cmd.hasOption("m");
 
 		} catch (ParseException e) {
-			e.printStackTrace();
+			printHelp(options);
 		}
 	}
 }
