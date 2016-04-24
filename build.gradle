@@ -9,7 +9,7 @@
 
 // Apply the java plugin to add support for Java
 apply plugin: 'java'
-apply plugin: 'application'
+apply plugin: 'application' // gradle distZip to genenerate a runnable package
 
 mainClassName = "net.lifove.clami.CLAMI"
 
