@@ -17,9 +17,10 @@ import org.apache.commons.cli.ParseException;
  */
 public class CLAMI {
 	
-	String sourcePath;
-	String sourceLabelName;
-	String sourceLabelPos;
+	String dataFilePath;
+	String labelName;
+	String posLabelValue;
+	boolean forCLAMI = false;
 
 	public static void main(String[] args) {
 		
@@ -27,7 +28,7 @@ public class CLAMI {
 		
 	}
 
-	private void runner(String[] args) {
+	void runner(String[] args) {
 		
 		Options options = createOptions();
 		
@@ -87,9 +88,10 @@ public class CLAMI {
 
 			CommandLine cmd = parser.parse(options, args);
 
-			sourcePath = cmd.getOptionValue("sourcefile");
-			sourceLabelName = cmd.getOptionValue("srclabelname");
-			sourceLabelPos = cmd.getOptionValue("possrclabel");
+			dataFilePath = cmd.getOptionValue("f");
+			labelName = cmd.getOptionValue("l");
+			posLabelValue = cmd.getOptionValue("p");
+			forCLAMI = cmd.hasOption("m");
 
 		} catch (ParseException e) {
 			e.printStackTrace();
