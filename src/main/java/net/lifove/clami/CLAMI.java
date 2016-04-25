@@ -1,5 +1,7 @@
 package net.lifove.clami;
 
+import java.util.ArrayList;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -78,7 +80,17 @@ public class CLAMI {
 		}
 		
 		// compute minimum K for the top half clusters
+		ArrayList<Double> Ks = new ArrayList<Double>();
+		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
+			if(!Ks.contains(K[instIdx]))
+				Ks.add(K[instIdx]);
+		}
+		double KForTopHalf = Utils.getMedian(Ks);
 		
+		// Predict
+		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
+			System.out.println("Instance " + (instIdx+1) + ": " + (K[instIdx]>=KForTopHalf?"buggy":"clean"));
+		}
 		
 	}
 

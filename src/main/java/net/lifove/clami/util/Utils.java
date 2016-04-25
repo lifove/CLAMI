@@ -4,6 +4,12 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+
+import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
+import com.google.common.primitives.Doubles;
 
 import weka.core.Instances;
 
@@ -30,6 +36,14 @@ public class Utils {
 		instances.setClassIndex(instances.attribute(classAttributeName).index());
 
 		return instances;
+	}
+	
+	static public double getMedian(ArrayList<Double> values){
+		return StatUtils.percentile(getDoublePrimitive(values),50);
+	}
+	
+	public static double[] getDoublePrimitive(ArrayList<Double> values) {
+		return Doubles.toArray(values);
 	}
 
 }
