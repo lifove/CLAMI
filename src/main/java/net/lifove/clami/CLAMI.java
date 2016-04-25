@@ -10,7 +10,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;

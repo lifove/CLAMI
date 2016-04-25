@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.commons.math3.stat.StatUtils;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import com.google.common.primitives.Doubles;
 
@@ -38,10 +37,20 @@ public class Utils {
 		return instances;
 	}
 	
+	/**
+	 * Get median from ArraList<Double>
+	 * @param values
+	 * @return
+	 */
 	static public double getMedian(ArrayList<Double> values){
 		return StatUtils.percentile(getDoublePrimitive(values),50);
 	}
 	
+	/**
+	 * Get primitive double form ArrayList<Double>
+	 * @param values
+	 * @return
+	 */
 	public static double[] getDoublePrimitive(ArrayList<Double> values) {
 		return Doubles.toArray(values);
 	}
