@@ -9,7 +9,7 @@ public class CLAMITest {
 
 	@Test
 	public void testRunner() {
-		String[] args = {"-f","test.arff","-l","label","-p","buggy","-m"};
+		String[] args = {"-f","data/sample.arff","-l","class","-p","buggy","-m"};
 		CLAMI runner = new CLAMI();
 		runner.runner(args);
 		assert(runner.forCLAMI);
