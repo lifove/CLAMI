@@ -38,6 +38,16 @@ public class Utils {
 	}
 	
 	/**
+	 * Get label value of an instance
+	 * @param instances
+	 * @param instance index
+	 * @return string label of an instance
+	 */
+	static public String getStringValueOfInstanceLabel(Instances instances,int intanceIndex){
+		return instances.instance(intanceIndex).stringValue(instances.classIndex());
+	}
+	
+	/**
 	 * Get median from ArraList<Double>
 	 * @param values
 	 * @return

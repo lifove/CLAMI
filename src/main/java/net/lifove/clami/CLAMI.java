@@ -88,7 +88,8 @@ public class CLAMI {
 		
 		// Predict
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
-			System.out.println("Instance " + (instIdx+1) + ": " + (K[instIdx]>=KForTopHalf?"buggy":"clean"));
+			System.out.println("Instance " + (instIdx+1) + ": " + (K[instIdx]>=KForTopHalf?"buggy":"clean") +
+						"(" + Utils.getStringValueOfInstanceLabel(instances,instIdx) + ")");
 		}
 		
 	}
