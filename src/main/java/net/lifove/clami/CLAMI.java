@@ -7,6 +7,11 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
+import net.lifove.clami.util.Utils;
+import weka.core.Instances;
 
 /**
  * CLAMI implementation:
@@ -38,6 +43,42 @@ public class CLAMI {
 		else{
 			parseOptions(options, args);
 		}
+		
+		// load an arff file
+		Instances instances = Utils.loadArff(dataFilePath, labelName);
+		
+		// do prediction
+		prediction(instances,posLabelValue);
+		
+	}
+	
+	void prediction(Instances instances,String positiveLabel){
+		
+		// compute median values for attributes
+		double[] mediansForAttributes = new double[instances.numAttributes()];
+
+		for(int attrIdx=0; attrIdx < instances.numAttributes();attrIdx++){
+			if (attrIdx == instances.classIndex())
+				continue;
+			mediansForAttributes[attrIdx] = StatUtils.percentile(instances.attributeToDoubleArray(attrIdx),50);
+		}
+		
+		// compute, K = the number of metrics whose values are greater than median, for each instance
+		double[] K = new double[instances.numInstances()];
+		
+		for(int instIdx = 0; instIdx < instances.numInstances();instIdx++){
+			K[instIdx]=0;
+			for(int attrIdx = 0; attrIdx < instances.numAttributes();attrIdx++){
+				if (attrIdx == instances.classIndex())
+					continue;
+				if(instances.get(instIdx).value(attrIdx) > mediansForAttributes[attrIdx]){
+					K[instIdx]++;
+				}
+			}
+		}
+		
+		// compute minimum K for the top half clusters
+		
 		
 	}
 
