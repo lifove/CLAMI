@@ -26,13 +26,15 @@ public class Utils {
 			reader = new BufferedReader(new FileReader(path));
 			instances = new Instances(reader);
 			reader.close();
+			instances.setClassIndex(instances.attribute(classAttributeName).index());
+		} catch (NullPointerException e) {
+			System.err.println("Class label name, " + classAttributeName + ", does not exist! Please, check if the label name is correct.");
+			instances = null;
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			System.err.println("Data file does not exist. Please, check the path again!");
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("I/O error! Please, try again!");
 		}
-
-		instances.setClassIndex(instances.attribute(classAttributeName).index());
 
 		return instances;
 	}

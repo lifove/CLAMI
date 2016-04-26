@@ -48,8 +48,9 @@ public class CLAMI {
 		// load an arff file
 		Instances instances = Utils.loadArff(dataFilePath, labelName);
 		
-		// do prediction
-		prediction(instances,posLabelValue);
+		if (instances !=null)
+			// do prediction
+			prediction(instances,posLabelValue);
 		
 	}
 	

@@ -18,11 +18,16 @@ public class CLAMITest {
 		assertEquals(runner.posLabelValue,args[5]);
 		assertEquals(runner.forCLAMI,true);
 		
+		args[3] = "label";
+		runner = new CLAMI();
+		runner.runner(args);
+		
 		args[1] = "";
 		runner = new CLAMI();
-		assertEquals(runner.dataFilePath,null);
-		assertEquals(runner.labelName,null);
-		assertEquals(runner.posLabelValue,null);
+		runner.runner(args);
+		assertEquals(runner.dataFilePath,"");
+		assertEquals(runner.labelName,"label");
+		assertEquals(runner.posLabelValue,"buggy");
 	}
 
 }
