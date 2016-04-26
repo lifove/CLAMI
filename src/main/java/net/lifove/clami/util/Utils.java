@@ -55,7 +55,16 @@ public class Utils {
 	 * @return
 	 */
 	static public double getMedian(ArrayList<Double> values){
-		return StatUtils.percentile(getDoublePrimitive(values),50);
+		return getPercentile(values,50);
+	}
+	
+	/**
+	 * Get a value in a specific percentile from ArraList<Double>
+	 * @param values
+	 * @return
+	 */
+	static public double getPercentile(ArrayList<Double> values,double percentile){
+		return StatUtils.percentile(getDoublePrimitive(values),percentile);
 	}
 	
 	/**

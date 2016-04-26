@@ -1,6 +1,8 @@
 package net.lifove.clami;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -66,10 +68,10 @@ public class CLAMI {
 		}
 		
 		// compute, K = the number of metrics whose values are greater than median, for each instance
-		double[] K = new double[instances.numInstances()];
+		Double[] K = new Double[instances.numInstances()];
 		
 		for(int instIdx = 0; instIdx < instances.numInstances();instIdx++){
-			K[instIdx]=0;
+			K[instIdx]=0.0;
 			for(int attrIdx = 0; attrIdx < instances.numAttributes();attrIdx++){
 				if (attrIdx == instances.classIndex())
 					continue;
@@ -79,20 +81,14 @@ public class CLAMI {
 			}
 		}
 		
-		// compute minimum K for the top half clusters
-		ArrayList<Double> Ks = new ArrayList<Double>();
-		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
-			if(!Ks.contains(K[instIdx]))
-				Ks.add(K[instIdx]);
-		}
-		double KForTopHalf = Utils.getMedian(Ks);
+		// compute cutoff for the top and bottom clusters
+		double cotoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
 		
 		// Predict
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
-			System.out.println("Instance " + (instIdx+1) + " predicted as, " + (K[instIdx]>=KForTopHalf?"buggy":"clean") +
+			System.out.println("Instance " + (instIdx+1) + " predicted as, " + (K[instIdx]>=cotoffOfKForTopClusters?"buggy":"clean") +
 						", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances,instIdx) + ") ");
 		}
-		
 	}
 
 	private void printHelp(Options options) {
