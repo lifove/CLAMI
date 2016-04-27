@@ -54,6 +54,10 @@ public class CLAMI {
 				// load an arff file
 				Instances instances = Utils.loadArff(dataFilePath, labelName);
 				
+				// exit when percentile range is not correct (it should be 0 < range <= 100)
+				if (percentileCutoff <=0 || 100 < percentileCutoff)
+					return;
+				
 				if (instances !=null)
 					// do prediction
 					prediction(instances,posLabelValue);

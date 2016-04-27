@@ -31,6 +31,10 @@ public class CLAMITest {
 		runner = new CLAMI();
 		runner.runner(args);
 		
+		args[8] = "-1";
+		runner = new CLAMI();
+		runner.runner(args);
+		
 		args[3] = "label";
 		runner = new CLAMI();
 		runner.runner(args);
