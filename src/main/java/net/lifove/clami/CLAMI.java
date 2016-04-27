@@ -28,7 +28,9 @@ public class CLAMI {
 	String dataFilePath;
 	String labelName;
 	String posLabelValue;
+	double percentileCutoff = 50;
 	boolean forCLAMI = false;
+	boolean help = false;
 
 	public static void main(String[] args) {
 		
@@ -45,15 +47,18 @@ public class CLAMI {
 		}
 		else{
 			parseOptions(options, args);
+			
+			if (help){
+				printHelp(options);
+			}else{
+				// load an arff file
+				Instances instances = Utils.loadArff(dataFilePath, labelName);
+				
+				if (instances !=null)
+					// do prediction
+					prediction(instances,posLabelValue);
+			}
 		}
-		
-		// load an arff file
-		Instances instances = Utils.loadArff(dataFilePath, labelName);
-		
-		if (instances !=null)
-			// do prediction
-			prediction(instances,posLabelValue);
-		
 	}
 	
 	void prediction(Instances instances,String positiveLabel){
@@ -81,8 +86,8 @@ public class CLAMI {
 			}
 		}
 		
-		// compute cutoff for the top and bottom clusters
-		double cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
+		// compute cutoff for the top and bottom clusters, default = median (50)
+		double cutoffOfKForTopClusters = Utils.getPercentile(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))),percentileCutoff);
 		
 		// Predict
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
@@ -111,12 +116,24 @@ public class CLAMI {
 		        .argName("file")
 		        .required()
 		        .build());
+		
+		options.addOption(Option.builder("h").longOpt("help")
+		        .desc("Help")
+		        .build());
+		
+		options.addOption(Option.builder("c").longOpt("cutoff")
+		        .desc("Cutoff percentile for higher value clusters. Default is median (50).")
+		        .hasArg()
+		        .argName("cutoff percentile")
+		        .build());
+		
 		options.addOption(Option.builder("l").longOpt("lable")
 		        .desc("Label (Class attrubite) name")
 		        .hasArg()
 		        .argName("attribute name")
 		        .required()
 		        .build());
+		
 		options.addOption(Option.builder("p").longOpt("poslabel")
 		        .desc("String value of buggy label. Since CLA/CLAMI works for unlabeld data (in case of weka arff files, labeled as '?',"
 		        		+ " it is not necessary to use this option. "
@@ -125,6 +142,7 @@ public class CLAMI {
 		        .hasArg()
 		        .argName("attribute value")
 		        .build());
+		
 		options.addOption(Option.builder("m").longOpt("clami")
 		        .desc("Run CLAMI instead of CLA")
 		        .build());
@@ -144,7 +162,10 @@ public class CLAMI {
 			dataFilePath = cmd.getOptionValue("f");
 			labelName = cmd.getOptionValue("l");
 			posLabelValue = cmd.getOptionValue("p");
+			if(cmd.getOptionValue("c") != null)
+				percentileCutoff = Double.parseDouble(cmd.getOptionValue("c"));
 			forCLAMI = cmd.hasOption("m");
+			help = cmd.hasOption("h");
 
 		} catch (ParseException e) {
 			printHelp(options);
