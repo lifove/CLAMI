@@ -17,6 +17,11 @@ import weka.core.Instances;
 public class Utils {
 	
 	
+	/**
+	 * Get CLA result
+	 * @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 */
 	public static void getCLAResult(Instances instances,double percentileCutoff) {
 		// compute median values for attributes
 		double[] mediansForAttributes = new double[instances.numAttributes()];
