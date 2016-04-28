@@ -71,38 +71,7 @@ public class CLAMI {
 	}
 	
 	void prediction(Instances instances,String positiveLabel){
-		
-		// compute median values for attributes
-		double[] mediansForAttributes = new double[instances.numAttributes()];
-
-		for(int attrIdx=0; attrIdx < instances.numAttributes();attrIdx++){
-			if (attrIdx == instances.classIndex())
-				continue;
-			mediansForAttributes[attrIdx] = StatUtils.percentile(instances.attributeToDoubleArray(attrIdx),50);
-		}
-		
-		// compute, K = the number of metrics whose values are greater than median, for each instance
-		Double[] K = new Double[instances.numInstances()];
-		
-		for(int instIdx = 0; instIdx < instances.numInstances();instIdx++){
-			K[instIdx]=0.0;
-			for(int attrIdx = 0; attrIdx < instances.numAttributes();attrIdx++){
-				if (attrIdx == instances.classIndex())
-					continue;
-				if(instances.get(instIdx).value(attrIdx) > mediansForAttributes[attrIdx]){
-					K[instIdx]++;
-				}
-			}
-		}
-		
-		// compute cutoff for the top and bottom clusters, default = median (50)
-		double cutoffOfKForTopClusters = Utils.getPercentile(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))),percentileCutoff);
-		
-		// Predict
-		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
-			System.out.println("Instance " + (instIdx+1) + " predicted as, " + (K[instIdx]>=cutoffOfKForTopClusters?"buggy":"clean") +
-						", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances,instIdx) + ") ");
-		}
+		Utils.getCLAResult(instances, percentileCutoff);
 	}
 
 	private void printHelp(Options options) {
