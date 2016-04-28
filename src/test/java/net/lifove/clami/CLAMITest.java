@@ -11,12 +11,16 @@ public class CLAMITest {
 	public void testRunner() {
 		
 		CLAMI runner = new CLAMI();
-		String [] arg={"-h","-k","-k"};
+		String [] arg={"-k"};
 		runner.runner(arg);
+		
+		String [] arg2={"-h"};
+		runner.runner(arg2);
 		
 		String[] args = {"-f","data/sample.arff","-l","class","-p","buggy","-m","-c","50"};
 		runner = new CLAMI();
 		runner.runner(args);
+		
 		assert(runner.forCLAMI);
 		assertEquals(runner.dataFilePath,args[1]);
 		assertEquals(runner.labelName,args[3]);

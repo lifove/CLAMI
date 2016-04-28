@@ -42,25 +42,25 @@ public class CLAMI {
 		
 		Options options = createOptions();
 		
-		parseOptions(options, args);
-		
-		if (help){
-			printHelp(options);
-			return;
+		if(parseOptions(options, args)){
+			if (help){
+				printHelp(options);
+				return;
+			}
+			
+			// exit when percentile range is not correct (it should be 0 < range <= 100)
+			if (percentileCutoff <=0 || 100 < percentileCutoff){
+				System.err.println("Cutoff percentile must be 0 < and <=100");
+				return;
+			}
+			
+			// load an arff file
+			Instances instances = Utils.loadArff(dataFilePath, labelName);
+						
+			if (instances !=null)
+				// do prediction
+				prediction(instances,posLabelValue);
 		}
-		
-		// exit when percentile range is not correct (it should be 0 < range <= 100)
-		if (percentileCutoff <=0 || 100 < percentileCutoff){
-			System.err.println("Cutoff percentile must be 0 < and <=100");
-			return;
-		}
-		
-		// load an arff file
-		Instances instances = Utils.loadArff(dataFilePath, labelName);
-					
-		if (instances !=null)
-			// do prediction
-			prediction(instances,posLabelValue);
 	}
 	
 	void prediction(Instances instances,String positiveLabel){
@@ -122,7 +122,7 @@ public class CLAMI {
 
 	}
 	
-	void parseOptions(Options options,String[] args){
+	boolean parseOptions(Options options,String[] args){
 
 		CommandLineParser parser = new DefaultParser();
 
@@ -140,6 +140,9 @@ public class CLAMI {
 
 		} catch (ParseException e) {
 			printHelp(options);
+			return false;
 		}
+
+		return true;
 	}
 }
