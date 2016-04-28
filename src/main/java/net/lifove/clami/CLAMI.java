@@ -42,7 +42,9 @@ public class CLAMI {
 		
 		Options options = createOptions();
 		
-		if(args.length < 3){
+		
+		
+		if(args.length < options.getRequiredOptions().size()){
 			printHelp(options);
 		}
 		else{
@@ -50,18 +52,21 @@ public class CLAMI {
 			
 			if (help){
 				printHelp(options);
-			}else{
-				// load an arff file
-				Instances instances = Utils.loadArff(dataFilePath, labelName);
-				
-				// exit when percentile range is not correct (it should be 0 < range <= 100)
-				if (percentileCutoff <=0 || 100 < percentileCutoff)
-					return;
-				
-				if (instances !=null)
-					// do prediction
-					prediction(instances,posLabelValue);
+				return;
 			}
+			
+			// exit when percentile range is not correct (it should be 0 < range <= 100)
+			if (percentileCutoff <=0 || 100 < percentileCutoff){
+				System.err.println("Cutoff percentile must be 0 < and <=100");
+				return;
+			}
+			
+			// load an arff file
+			Instances instances = Utils.loadArff(dataFilePath, labelName);
+						
+			if (instances !=null)
+				// do prediction
+				prediction(instances,posLabelValue);
 		}
 	}
 	

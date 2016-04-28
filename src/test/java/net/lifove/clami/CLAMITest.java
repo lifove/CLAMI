@@ -11,7 +11,7 @@ public class CLAMITest {
 	public void testRunner() {
 		
 		CLAMI runner = new CLAMI();
-		String [] arg={"-h"};
+		String [] arg={"-h","-k","-k"};
 		runner.runner(arg);
 		
 		String[] args = {"-f","data/sample.arff","-l","class","-p","buggy","-m","-c","50"};
@@ -35,6 +35,7 @@ public class CLAMITest {
 		runner = new CLAMI();
 		runner.runner(args);
 		
+		args[8] = "50";
 		args[3] = "label";
 		runner = new CLAMI();
 		runner.runner(args);
