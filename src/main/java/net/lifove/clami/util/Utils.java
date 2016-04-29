@@ -22,7 +22,10 @@ public class Utils {
 	 * @param instances
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 */
-	public static void getCLAResult(Instances instances,double percentileCutoff) {
+	public static Instances getCLAResult(Instances instances,double percentileCutoff,String positiveLabel) {
+		
+		Instances instancesByCLA = new Instances(instances);
+		
 		// compute median values for attributes
 		double[] mediansForAttributes = new double[instances.numAttributes()];
 
@@ -53,7 +56,35 @@ public class Utils {
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
 			System.out.println("Instance " + (instIdx+1) + " predicted as, " + (K[instIdx]>=cutoffOfKForTopClusters?"buggy":"clean") +
 						", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances,instIdx) + ") ");
+			
+			if(K[instIdx]>=cutoffOfKForTopClusters)
+				instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
+			else
+				instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA,positiveLabel));
 		}
+		
+		return instancesByCLA;
+	}
+	
+	/**
+	 * Get the negative label string value from the positive label value
+	 * @param instances
+	 * @param positiveLabel
+	 * @return
+	 */
+	static public String getNegLabel(Instances instances, String positiveLabel){
+		if(instances.classAttribute().numValues()==2){
+			int posIndex = instances.classAttribute().indexOfValue(positiveLabel);
+			if(posIndex==0)
+				return instances.classAttribute().value(1);
+			else
+				return instances.classAttribute().value(0);
+		}
+		else{
+			System.err.println("Class labels must be binary");
+			System.exit(0);
+		}
+		return null;
 	}
 	
 	/**
