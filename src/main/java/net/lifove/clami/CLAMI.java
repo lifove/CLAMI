@@ -1,9 +1,5 @@
 package net.lifove.clami;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -11,7 +7,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.math3.stat.StatUtils;
 
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
