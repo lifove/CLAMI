@@ -33,6 +33,30 @@ public class CLAMITest {
 		runner = new CLAMI();
 		runner.runner(args);
 		
+		args[8] = "88";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "87";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "86";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "85";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "84";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "83";
+		runner = new CLAMI();
+		runner.runner(args);
+		
 		args[8] = "80";
 		runner = new CLAMI();
 		runner.runner(args);
@@ -42,6 +66,18 @@ public class CLAMITest {
 		runner.runner(args);
 		
 		args[8] = "60";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "57";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "55";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "52";
 		runner = new CLAMI();
 		runner.runner(args);
 		
