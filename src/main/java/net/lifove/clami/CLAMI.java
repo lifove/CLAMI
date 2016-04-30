@@ -26,6 +26,7 @@ public class CLAMI {
 	double percentileCutoff = 50;
 	boolean forCLAMI = false;
 	boolean help = false;
+	boolean suppress = false;
 
 	public static void main(String[] args) {
 		
@@ -110,6 +111,10 @@ public class CLAMI {
 		        .argName("cutoff percentile")
 		        .build());
 		
+		options.addOption(Option.builder("s").longOpt("suppress")
+		        .desc("Suppress detailed prediction results. Only works when the arff data is labeled.")
+		        .build());
+		
 		options.addOption(Option.builder("l").longOpt("lable")
 		        .desc("Label (Class attrubite) name")
 		        .hasArg()
@@ -149,6 +154,7 @@ public class CLAMI {
 				percentileCutoff = Double.parseDouble(cmd.getOptionValue("c"));
 			forCLAMI = cmd.hasOption("m");
 			help = cmd.hasOption("h");
+			suppress = cmd.hasOption("s");
 
 		} catch (ParseException e) {
 			printHelp(options);
