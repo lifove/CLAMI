@@ -16,6 +16,8 @@ import com.google.common.primitives.Ints;
 
 import weka.classifiers.Classifier;
 import weka.core.Instances;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.Remove;
 
 public class Utils {
 	
@@ -129,10 +131,11 @@ public class Utils {
 		
 		// Metric selection
 		ArrayList<Integer> selectedMetrics = getSelectedMetrics(instancesByCLA,cutoffsForHigherValuesOfAttribute,positiveLabel);
+		Instances instancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetrics,true);
 		
 		// Instance selection
 		
-		return instancesByCLA;
+		return instancesByCLAMI;
 	}
 
 	/**
@@ -173,8 +176,10 @@ public class Utils {
 				continue;
 			
 			if(violations[attrIdx]==minViolationScore)
-				selectedMetrics.add(attrIdx);
+				selectedMetrics.add((attrIdx+1)); // let the start attribute index be 1 
 		}
+		
+		selectedMetrics.add(instances.classIndex() + 1); // add class attribute index
 		
 		return selectedMetrics;
 	}
@@ -260,6 +265,49 @@ public class Utils {
 	 */
 	public static double[] getDoublePrimitive(ArrayList<Double> values) {
 		return Doubles.toArray(values);
+	}
+	
+	/**
+	 * Get instances with specific attributes
+	 * @param instances
+	 * @param attributeIndices attribute indices (e.g., 1,3,4) first index is 1
+	 * @param invertSelection for invert selection
+	 * @return new instances with specific attributes
+	 */
+	static public Instances getInstancesByRemovingSpecificAttributes(Instances instances,String attributeIndices,boolean invertSelection){
+		Instances newInstances = new Instances(instances);
+
+		Remove remove;
+
+		remove = new Remove();
+		remove.setAttributeIndices(attributeIndices);
+		remove.setInvertSelection(invertSelection);
+		try {
+			remove.setInputFormat(newInstances);
+			newInstances = Filter.useFilter(newInstances, remove);
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+
+		return newInstances;
+	}
+	
+	/**
+	 * Get instances with specific attributes
+	 * @param instances
+	 * @param attributeIndices attribute indices (e.g., 1,3,4) first index is 1
+	 * @param invertSelection for invert selection
+	 * @return new instances with specific attributes
+	 */
+	static public Instances getInstancesByRemovingSpecificAttributes(Instances instances,ArrayList<Integer> attributeIndices,boolean invertSelection){
+		
+		String srtIndices = "";
+		for(int index:attributeIndices){
+			srtIndices = srtIndices + index + ",";
+		}
+		
+		return getInstancesByRemovingSpecificAttributes(instances,srtIndices,invertSelection);
 	}
 
 }
