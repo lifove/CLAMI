@@ -18,6 +18,7 @@ import weka.classifiers.Classifier;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
+import weka.filters.unsupervised.instance.RemoveRange;
 
 public class Utils {
 	
@@ -97,11 +98,22 @@ public class Utils {
 		
 		String mlAlgorithm = "weka.classifiers.functions.Logistic";
 		
-		Instances trainingInstances = getCLAMITrainingInstances(instancesByCLA,positiveLabel,percentileCutoff);
+		// Compute medians
+		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instancesByCLA,percentileCutoff);
+				
+		// Metric selection
+		String selectedMetricIndices = getSelectedMetrics(instancesByCLA,cutoffsForHigherValuesOfAttribute,positiveLabel);
+		Instances trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetricIndices,true);
+		
+		testInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);
+				
+		// Instance selection
+		String instIndicesNeedToRemove = getSelectedInstances(trainingInstancesByCLAMI,cutoffsForHigherValuesOfAttribute,positiveLabel);
+		trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(trainingInstancesByCLAMI,instIndicesNeedToRemove,false);
 		
 		try {
 			Classifier classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
-			classifier.buildClassifier(trainingInstances);
+			classifier.buildClassifier(trainingInstancesByCLAMI);
 			
 			for(int instIdx = 0; instIdx < testInstances.numInstances(); instIdx++){
 				double predictedLabelIdx = classifier.classifyInstance(testInstances.get(instIdx));
@@ -114,25 +126,43 @@ public class Utils {
 			e.printStackTrace();
 		}
 	}
-	
-	/**
-	 * Get training instances for CLAMI by selecting most representative attributes and instances from CLA instances.
-	 * @param instancesByCLA
-	 * @param positiveLabel
-	 * @return
-	 */
-	private static Instances getCLAMITrainingInstances(Instances instancesByCLA,String positiveLabel,double percentileCutoff) {
+
+	private static String getSelectedInstances(Instances instances, double[] cutoffsForHigherValuesOfAttribute,
+			String positiveLabel) {
 		
-		// Compute medians
-		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instancesByCLA,percentileCutoff);
+		int[] violations = new int[instances.numInstances()];
 		
-		// Metric selection
-		String selectedMetrics = getSelectedMetrics(instancesByCLA,cutoffsForHigherValuesOfAttribute,positiveLabel);
-		Instances instancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetrics,true);
+		for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
+			
+			for(int attrIdx=0; attrIdx < instances.numAttributes(); attrIdx++){
+				if(attrIdx == instances.classIndex()){
+					violations[attrIdx] = instances.numInstances(); // make this as max to ignore since our concern is minimum violation.
+					continue;
+				}	
+				
+				if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx]
+						&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)){
+						violations[instIdx]++;
+				}else if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]
+						&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(getNegLabel(instances, positiveLabel))){
+						violations[instIdx]++;
+				}
+			}
+		}
 		
-		// Instance selection
+		String selectedInstances = "";
 		
-		return instancesByCLAMI;
+		for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
+			if(instIdx == instances.classIndex())
+				continue;
+			
+			if(violations[instIdx]>0)
+				selectedInstances += (instIdx+1) + ","; // let the start attribute index be 1 
+		}
+		
+		// TODO need logic when violations.length == 0
+		
+		return selectedInstances;
 	}
 
 	/**
@@ -265,10 +295,10 @@ public class Utils {
 	}
 	
 	/**
-	 * Get instances with specific attributes
+	 * Get instances by removing specific attributes
 	 * @param instances
 	 * @param attributeIndices attribute indices (e.g., 1,3,4) first index is 1
-	 * @param invertSelection for invert selection
+	 * @param invertSelection for invert selection, if true, select attributes with attributeIndices bug if false, remote attributes with attributeIndices
 	 * @return new instances with specific attributes
 	 */
 	static public Instances getInstancesByRemovingSpecificAttributes(Instances instances,String attributeIndices,boolean invertSelection){
@@ -285,6 +315,30 @@ public class Utils {
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(0);
+		}
+
+		return newInstances;
+	}
+	
+	/**
+	 * Get instances by removing specific instances
+	 * @param instances
+	 * @param instance indices (e.g., 1,3,4) first index is 1
+	 * @param option for invert selection
+	 * @return selected instances
+	 */
+	static public Instances getInstancesByRemovingSpecificInstances(Instances instances,String instanceIndices,boolean invertSelection){
+		Instances newInstances = null;
+
+		RemoveRange instFilter = new RemoveRange();
+		instFilter.setInstancesIndices(instanceIndices);
+		instFilter.setInvertSelection(invertSelection);
+
+		try {
+			instFilter.setInputFormat(instances);
+			newInstances = Filter.useFilter(instances, instFilter);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 
 		return newInstances;
