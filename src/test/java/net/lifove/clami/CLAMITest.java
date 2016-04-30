@@ -27,6 +27,12 @@ public class CLAMITest {
 		assertEquals(runner.posLabelValue,args[5]);
 		assertEquals(runner.forCLAMI,true);
 		
+		args[1] = "data/sample2.arff";
+		args[8] = "50";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[1] = "data/sample.arff";
 		args[6] = "";
 		
 		args[8] = "90";

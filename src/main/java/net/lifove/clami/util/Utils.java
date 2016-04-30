@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.apache.commons.math3.stat.StatUtils;
@@ -107,79 +108,57 @@ public class Utils {
 		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instancesByCLA,percentileCutoff);
 				
 		// Metric selection
-		String selectedMetricIndices = getSelectedMetrics(instancesByCLA,cutoffsForHigherValuesOfAttribute,positiveLabel);
-		Instances trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetricIndices,true);
 		
-		testInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);
-				
-		// Instance selection
-		String instIndicesNeedToRemove = getSelectedInstances(trainingInstancesByCLAMI,cutoffsForHigherValuesOfAttribute,positiveLabel);
-		trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(trainingInstancesByCLAMI,instIndicesNeedToRemove,false);
+		// (1) get distinct violation scores ordered by ASC
+		HashMap<Integer,String> metricIdxWithTheSameViolationScores = getMetricIndicesWithTheViolationScores(instancesByCLA,cutoffsForHigherValuesOfAttribute,positiveLabel);
+		Object[] keys = metricIdxWithTheSameViolationScores.keySet().toArray();
+		Arrays.sort(keys);
 		
-		try {
-			Classifier classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
-			classifier.buildClassifier(trainingInstancesByCLAMI);
+		Instances trainingInstancesByCLAMI = null;
+		
+		// (2) Generate instances for CLAMI. If there are no instances in the first round with the minimum violation scores,
+		//     then use the next minimum violation score. (Keys are ordered violation scores)
+		Instances newTestInstances = null;
+		for(Object key: keys){
 			
-			for(int instIdx = 0; instIdx < testInstances.numInstances(); instIdx++){
-				double predictedLabelIdx = classifier.classifyInstance(testInstances.get(instIdx));
-				System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
-						((testInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
-						", (Actual class: " + Utils.getStringValueOfInstanceLabel(testInstances,instIdx) + ") ");
-			}
+			String selectedMetricIndices = metricIdxWithTheSameViolationScores.get(key) + (instancesByCLA.classIndex() +1);
+			trainingInstancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetricIndices,true);
+			newTestInstances = getInstancesByRemovingSpecificAttributes(testInstances,selectedMetricIndices,true);
+					
+			// Instance selection
+			String instIndicesNeedToRemove = getSelectedInstances(trainingInstancesByCLAMI,cutoffsForHigherValuesOfAttribute,positiveLabel);
+			trainingInstancesByCLAMI = getInstancesByRemovingSpecificInstances(trainingInstancesByCLAMI,instIndicesNeedToRemove,false);
 			
-		} catch (Exception e) {
-			e.printStackTrace();
+			if(trainingInstancesByCLAMI.numInstances() != 0)
+				break;
 		}
-	}
-
-	private static String getSelectedInstances(Instances instances, double[] cutoffsForHigherValuesOfAttribute,
-			String positiveLabel) {
 		
-		int[] violations = new int[instances.numInstances()];
+		// check if there are no instances in any one of two classes.
+		if(trainingInstancesByCLAMI.attributeStats(trainingInstancesByCLAMI.classIndex()).nominalCounts[0]!=0 &&
+				trainingInstancesByCLAMI.attributeStats(trainingInstancesByCLAMI.classIndex()).nominalCounts[1]!=0){
 		
-		for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
-			
-			for(int attrIdx=0; attrIdx < instances.numAttributes(); attrIdx++){
-				if(attrIdx == instances.classIndex()){
-					violations[attrIdx] = instances.numInstances(); // make this as max to ignore since our concern is minimum violation.
-					continue;
-				}	
+			try {
+				Classifier classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
+				classifier.buildClassifier(trainingInstancesByCLAMI);
 				
-				if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx]
-						&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)){
-						violations[instIdx]++;
-				}else if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]
-						&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(getNegLabel(instances, positiveLabel))){
-						violations[instIdx]++;
+				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
+					double predictedLabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
+					System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
+							((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
+							", (Actual class: " + Utils.getStringValueOfInstanceLabel(newTestInstances,instIdx) + ") ");
 				}
+				
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
+		}else{
+			System.err.println("Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");
 		}
-		
-		String selectedInstances = "";
-		
-		for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
-			if(instIdx == instances.classIndex())
-				continue;
-			
-			if(violations[instIdx]>0)
-				selectedInstances += (instIdx+1) + ","; // let the start attribute index be 1 
-		}
-		
-		// TODO need logic when violations.length == 0
-		
-		return selectedInstances;
 	}
 
-	/**
-	 * Get the indices of selected metrics based on violations. (Violations are metric values does not follow their labels. 
-	 * @param instances
-	 * @param cutoffsForHigherValuesOfAttribute
-	 * @param positiveLabel
-	 * @return
-	 */
-	private static String getSelectedMetrics(Instances instances,
-			double[] cutoffsForHigherValuesOfAttribute,String positiveLabel) {
-		
+	private static HashMap<Integer, String> getMetricIndicesWithTheViolationScores(Instances instances,
+			double[] cutoffsForHigherValuesOfAttribute, String positiveLabel) {
+
 		int[] violations = new int[instances.numAttributes()];
 		
 		for(int attrIdx=0; attrIdx < instances.numAttributes(); attrIdx++){
@@ -199,23 +178,57 @@ public class Utils {
 			}
 		}
 		
-		int minViolationScore = Ints.min(violations);
-		
-		String selectedMetrics = "";
+		HashMap<Integer,String> metricIndicesWithTheSameViolationScores = new HashMap<Integer,String>();
 		
 		for(int attrIdx=0; attrIdx < instances.numAttributes(); attrIdx++){
-			if(attrIdx == instances.classIndex())
+			if(attrIdx == instances.classIndex()){
 				continue;
+			}
 			
-			if(violations[attrIdx]==minViolationScore)
-				selectedMetrics += (attrIdx+1) + ","; // let the start attribute index be 1 
+			int key = violations[attrIdx];
+			
+			if(!metricIndicesWithTheSameViolationScores.containsKey(key)){
+				metricIndicesWithTheSameViolationScores.put(key,(attrIdx+1) + ",");
+			}else{
+				String indices = metricIndicesWithTheSameViolationScores.get(key) + (attrIdx+1) + ",";
+				metricIndicesWithTheSameViolationScores.put(key,indices);
+			}
 		}
 		
-		selectedMetrics += (instances.classIndex() + 1); // add class attribute index
-		
-		return selectedMetrics;
+		return metricIndicesWithTheSameViolationScores;
 	}
 
+	private static String getSelectedInstances(Instances instances, double[] cutoffsForHigherValuesOfAttribute,
+			String positiveLabel) {
+		
+		int[] violations = new int[instances.numInstances()];
+		
+		for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
+			
+			for(int attrIdx=0; attrIdx < instances.numAttributes(); attrIdx++){
+				if(attrIdx == instances.classIndex())
+					continue; // no need to compute violation score for the class attribute
+				
+				if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx]
+						&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)){
+						violations[instIdx]++;
+				}else if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]
+						&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(getNegLabel(instances, positiveLabel))){
+						violations[instIdx]++;
+				}
+			}
+		}
+		
+		String selectedInstances = "";
+		
+		for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
+			if(violations[instIdx]>0)
+				selectedInstances += (instIdx+1) + ","; // let the start attribute index be 1 
+		}
+		
+		return selectedInstances;
+	}
+	
 	/**
 	 * Get the negative label string value from the positive label value
 	 * @param instances
