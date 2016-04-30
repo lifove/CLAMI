@@ -73,7 +73,7 @@ public class CLAMI {
 	void prediction(Instances instances,String positiveLabel){
 		
 		if(!forCLAMI)
-			Utils.getCLAResult(instances, percentileCutoff,positiveLabel, forCLAMI);
+			Utils.getCLAResult(instances, percentileCutoff,positiveLabel);
 		else
 			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff);
 			

@@ -28,7 +28,7 @@ public class Utils {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @return instances labeled by CLA
 	 */
-	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean forCLAMI) {
+	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel) {
 		
 		System.out.println("\nHigher value cutoff > P" + percentileCutoff );
 		
