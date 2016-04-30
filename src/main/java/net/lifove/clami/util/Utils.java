@@ -12,6 +12,7 @@ import org.apache.commons.math3.stat.StatUtils;
 
 import com.google.common.primitives.Doubles;
 
+import weka.classifiers.Classifier;
 import weka.core.Instances;
 
 public class Utils {
@@ -22,7 +23,7 @@ public class Utils {
 	 * @param instances
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 */
-	public static Instances getCLAResult(Instances instances,double percentileCutoff,String positiveLabel) {
+	public static Instances getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean forCLAMI) {
 		
 		Instances instancesByCLA = new Instances(instances);
 		
@@ -54,7 +55,8 @@ public class Utils {
 		
 		// Predict
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
-			System.out.println("Instance " + (instIdx+1) + " predicted as, " + (K[instIdx]>=cutoffOfKForTopClusters?"buggy":"clean") +
+			if(!forCLAMI)
+				System.out.println("CLA: Instance " + (instIdx+1) + " predicted as, " + (K[instIdx]>=cutoffOfKForTopClusters?"buggy":"clean") +
 						", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances,instIdx) + ") ");
 			
 			if(K[instIdx]>=cutoffOfKForTopClusters)
@@ -66,6 +68,34 @@ public class Utils {
 		return instancesByCLA;
 	}
 	
+	public static void getCLAMIResult(Instances testInstances, Instances instancesByCLA, String positiveLabel) {
+		
+		String mlAlgorithm = "weka.classifiers.functions.Logistic";
+		
+		Instances trainingInstances = getCLAMITrainingInstances(instancesByCLA,positiveLabel);
+		
+		try {
+			Classifier classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
+			classifier.buildClassifier(trainingInstances);
+			
+			for(int instIdx = 0; instIdx < testInstances.numInstances(); instIdx++){
+				double predictedLabelIdx = classifier.classifyInstance(testInstances.get(instIdx));
+				System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
+						((testInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
+						", (Actual class: " + Utils.getStringValueOfInstanceLabel(testInstances,instIdx) + ") ");
+			}
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	
+	private static Instances getCLAMITrainingInstances(Instances instancesByCLA, String positiveLabel) {
+		return instancesByCLA;
+	}
+
 	/**
 	 * Get the negative label string value from the positive label value
 	 * @param instances
