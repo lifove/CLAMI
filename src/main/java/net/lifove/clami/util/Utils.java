@@ -26,6 +26,8 @@ public class Utils {
 	 */
 	public static Instances getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean forCLAMI) {
 		
+		System.out.println("\nHigher value cutoff > P" + percentileCutoff );
+		
 		Instances instancesByCLA = new Instances(instances);
 		
 		// compute median values for attributes
@@ -45,6 +47,7 @@ public class Utils {
 			for(int attrIdx = 0; attrIdx < instances.numAttributes();attrIdx++){
 				if (attrIdx == instances.classIndex())
 					continue;
+				
 				if(instances.get(instIdx).value(attrIdx) > cutoffForHigherValuesOfAttribute[attrIdx]){
 					K[instIdx]++;
 				}

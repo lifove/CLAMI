@@ -28,11 +28,40 @@ public class CLAMITest {
 		assertEquals(runner.forCLAMI,true);
 		
 		args[6] = "";
+		
+		args[8] = "90";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "80";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "70";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "60";
+		runner = new CLAMI();
+		runner.runner(args);
+		
 		args[8] = "50";
 		runner = new CLAMI();
 		runner.runner(args);
 		
 		args[8] = "40";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "30";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "20";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[8] = "10";
 		runner = new CLAMI();
 		runner.runner(args);
 		
