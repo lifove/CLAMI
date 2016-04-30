@@ -90,7 +90,7 @@ public class CLAMI {
 		        .build());
 		
 		options.addOption(Option.builder("c").longOpt("cutoff")
-		        .desc("Cutoff percentile for higher value clusters. Default is median (50).")
+		        .desc("Cutoff percentile for higher values. Default is median (50).")
 		        .hasArg()
 		        .argName("cutoff percentile")
 		        .build());

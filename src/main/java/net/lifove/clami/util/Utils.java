@@ -22,18 +22,19 @@ public class Utils {
 	 * Get CLA result
 	 * @param instances
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @return instances labeled by CLA
 	 */
 	public static Instances getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean forCLAMI) {
 		
 		Instances instancesByCLA = new Instances(instances);
 		
 		// compute median values for attributes
-		double[] mediansForAttributes = new double[instances.numAttributes()];
+		double[] cutoffForHigherValuesOfAttribute = new double[instances.numAttributes()];
 
 		for(int attrIdx=0; attrIdx < instances.numAttributes();attrIdx++){
 			if (attrIdx == instances.classIndex())
 				continue;
-			mediansForAttributes[attrIdx] = StatUtils.percentile(instances.attributeToDoubleArray(attrIdx),50);
+			cutoffForHigherValuesOfAttribute[attrIdx] = StatUtils.percentile(instances.attributeToDoubleArray(attrIdx),percentileCutoff);
 		}
 		
 		// compute, K = the number of metrics whose values are greater than median, for each instance
@@ -44,14 +45,14 @@ public class Utils {
 			for(int attrIdx = 0; attrIdx < instances.numAttributes();attrIdx++){
 				if (attrIdx == instances.classIndex())
 					continue;
-				if(instances.get(instIdx).value(attrIdx) > mediansForAttributes[attrIdx]){
+				if(instances.get(instIdx).value(attrIdx) > cutoffForHigherValuesOfAttribute[attrIdx]){
 					K[instIdx]++;
 				}
 			}
 		}
 		
-		// compute cutoff for the top and bottom clusters, default = median (50)
-		double cutoffOfKForTopClusters = Utils.getPercentile(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))),percentileCutoff);
+		// compute cutoff for the top half and bottom half clusters, default = median (50)
+		double cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
 		
 		// Predict
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
@@ -68,6 +69,12 @@ public class Utils {
 		return instancesByCLA;
 	}
 	
+	/**
+	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get instancesByCLA use getCLAResult.
+	 * @param testInstances
+	 * @param instancesByCLA
+	 * @param positiveLabel
+	 */
 	public static void getCLAMIResult(Instances testInstances, Instances instancesByCLA, String positiveLabel) {
 		
 		String mlAlgorithm = "weka.classifiers.functions.Logistic";
@@ -89,10 +96,21 @@ public class Utils {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
 	}
 	
+	/**
+	 * Get training instances for CLAMI by selecting most representative attributes and instances from CLA instances.
+	 * @param instancesByCLA
+	 * @param positiveLabel
+	 * @return
+	 */
 	private static Instances getCLAMITrainingInstances(Instances instancesByCLA, String positiveLabel) {
+		
+		// Metric selection
+		
+		
+		// Instance selection
+		
 		return instancesByCLA;
 	}
 
