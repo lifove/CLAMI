@@ -143,7 +143,8 @@ public class Utils {
 				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
 					double predictedLabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
 					System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
-							((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
+							newTestInstances.classAttribute().value((int)predictedLabelIdx)	+
+							//((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
 							", (Actual class: " + Utils.getStringValueOfInstanceLabel(newTestInstances,instIdx) + ") ");
 				}
 				
