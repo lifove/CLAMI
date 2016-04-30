@@ -30,14 +30,7 @@ public class Utils {
 		
 		Instances instancesByCLA = new Instances(instances);
 		
-		// compute median values for attributes
-		double[] cutoffForHigherValuesOfAttribute = new double[instances.numAttributes()];
-
-		for(int attrIdx=0; attrIdx < instances.numAttributes();attrIdx++){
-			if (attrIdx == instances.classIndex())
-				continue;
-			cutoffForHigherValuesOfAttribute[attrIdx] = StatUtils.percentile(instances.attributeToDoubleArray(attrIdx),percentileCutoff);
-		}
+		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instances, percentileCutoff);
 		
 		// compute, K = the number of metrics whose values are greater than median, for each instance
 		Double[] K = new Double[instances.numInstances()];
@@ -48,13 +41,13 @@ public class Utils {
 				if (attrIdx == instances.classIndex())
 					continue;
 				
-				if(instances.get(instIdx).value(attrIdx) > cutoffForHigherValuesOfAttribute[attrIdx]){
+				if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]){
 					K[instIdx]++;
 				}
 			}
 		}
 		
-		// compute cutoff for the top half and bottom half clusters, default = median (50)
+		// compute cutoff for the top half and bottom half clusters
 		double cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
 		
 		// Predict
@@ -71,6 +64,24 @@ public class Utils {
 		
 		return instancesByCLA;
 	}
+
+	/**
+	 * Get higher value cutoffs for each attribute
+	 * @param instances
+	 * @param percentileCutoff
+	 * @return
+	 */
+	private static double[] getHigherValueCutoffs(Instances instances, double percentileCutoff) {
+		// compute median values for attributes
+		double[] cutoffForHigherValuesOfAttribute = new double[instances.numAttributes()];
+
+		for(int attrIdx=0; attrIdx < instances.numAttributes();attrIdx++){
+			if (attrIdx == instances.classIndex())
+				continue;
+			cutoffForHigherValuesOfAttribute[attrIdx] = StatUtils.percentile(instances.attributeToDoubleArray(attrIdx),percentileCutoff);
+		}
+		return cutoffForHigherValuesOfAttribute;
+	}
 	
 	/**
 	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get instancesByCLA use getCLAResult.
@@ -78,11 +89,11 @@ public class Utils {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instancesByCLA, String positiveLabel) {
+	public static void getCLAMIResult(Instances testInstances, Instances instancesByCLA, String positiveLabel,double percentileCutoff) {
 		
 		String mlAlgorithm = "weka.classifiers.functions.Logistic";
 		
-		Instances trainingInstances = getCLAMITrainingInstances(instancesByCLA,positiveLabel);
+		Instances trainingInstances = getCLAMITrainingInstances(instancesByCLA,positiveLabel,percentileCutoff);
 		
 		try {
 			Classifier classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
@@ -96,7 +107,6 @@ public class Utils {
 			}
 			
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -107,7 +117,10 @@ public class Utils {
 	 * @param positiveLabel
 	 * @return
 	 */
-	private static Instances getCLAMITrainingInstances(Instances instancesByCLA, String positiveLabel) {
+	private static Instances getCLAMITrainingInstances(Instances instancesByCLA,String positiveLabel,double percentileCutoff) {
+		
+		// Compute medians
+		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instancesByCLA,percentileCutoff);
 		
 		// Metric selection
 		
