@@ -6,11 +6,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 
 import org.apache.commons.math3.stat.StatUtils;
 
 import com.google.common.primitives.Doubles;
+import com.google.common.primitives.Ints;
 
 import weka.classifiers.Classifier;
 import weka.core.Instances;
@@ -119,15 +121,56 @@ public class Utils {
 	 */
 	private static Instances getCLAMITrainingInstances(Instances instancesByCLA,String positiveLabel,double percentileCutoff) {
 		
+		int numMetrics = instancesByCLA.numAttributes()-1;
+		int numInstances = instancesByCLA.numInstances();
+		
 		// Compute medians
 		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instancesByCLA,percentileCutoff);
 		
 		// Metric selection
-		
+		ArrayList<Integer> selectedMetrics = getSelectedMetrics(instancesByCLA,cutoffsForHigherValuesOfAttribute,positiveLabel);
 		
 		// Instance selection
 		
 		return instancesByCLA;
+	}
+
+	private static ArrayList<Integer> getSelectedMetrics(Instances instances,
+			double[] cutoffsForHigherValuesOfAttribute,String positiveLabel) {
+		
+		
+		int[] violations = new int[instances.numAttributes()];
+		
+		for(int attrIdx=0; attrIdx < instances.numAttributes(); attrIdx++){
+			if(attrIdx == instances.classIndex()){
+				violations[attrIdx] = instances.numInstances(); // make this as max to ignore since our concern is minimum violation.
+				continue;
+			}
+			
+			for(int instIdx=0; instIdx < instances.numInstances(); instIdx++){
+				if (instances.get(instIdx).value(attrIdx) <= cutoffsForHigherValuesOfAttribute[attrIdx]
+						&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(positiveLabel)){
+						violations[attrIdx]++;
+				}else if(instances.get(instIdx).value(attrIdx) > cutoffsForHigherValuesOfAttribute[attrIdx]
+						&& instances.get(instIdx).classValue() == instances.classAttribute().indexOfValue(getNegLabel(instances, positiveLabel))){
+						violations[attrIdx]++;
+				}
+			}
+		}
+		
+		int minViolationScore = Ints.min(violations);
+		
+		ArrayList<Integer> selectedMetrics = new ArrayList<Integer>();
+		
+		for(int attrIdx=0; attrIdx < instances.numAttributes(); attrIdx++){
+			if(attrIdx == instances.classIndex())
+				continue;
+			
+			if(violations[attrIdx]==minViolationScore)
+				selectedMetrics.add(attrIdx);
+		}
+		
+		return selectedMetrics;
 	}
 
 	/**
