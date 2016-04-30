@@ -29,10 +29,20 @@ public class Utils {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @return instances labeled by CLA
 	 */
-	public static Instances getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean forCLAMI) {
+	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean forCLAMI) {
 		
 		System.out.println("\nHigher value cutoff > P" + percentileCutoff );
 		
+		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel);
+		
+		// Print CLA results
+		for(int instIdx = 0; instIdx < instancesByCLA.numInstances(); instIdx++){
+			System.out.println("CLA: Instance " + (instIdx+1) + " predicted as, " + Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) +
+						", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances,instIdx) + ") ");
+		}
+	}
+
+	private static Instances getInstancesByCLA(Instances instances, double percentileCutoff, String positiveLabel) {
 		Instances instancesByCLA = new Instances(instances);
 		
 		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instances, percentileCutoff);
@@ -55,18 +65,12 @@ public class Utils {
 		// compute cutoff for the top half and bottom half clusters
 		double cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
 		
-		// Predict
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
-			if(!forCLAMI)
-				System.out.println("CLA: Instance " + (instIdx+1) + " predicted as, " + (K[instIdx]>=cutoffOfKForTopClusters?"buggy":"clean") +
-						", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances,instIdx) + ") ");
-			
 			if(K[instIdx]>=cutoffOfKForTopClusters)
 				instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
 			else
 				instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA,positiveLabel));
 		}
-		
 		return instancesByCLA;
 	}
 
@@ -98,7 +102,7 @@ public class Utils {
 		
 		String mlAlgorithm = "weka.classifiers.functions.Logistic";
 		
-		Instances instancesByCLA = Utils.getCLAResult(instances, percentileCutoff,positiveLabel, true);
+		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel);
 		
 		// Compute medians
 		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instancesByCLA,percentileCutoff);
