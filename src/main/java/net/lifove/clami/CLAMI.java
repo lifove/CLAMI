@@ -57,7 +57,7 @@ public class CLAMI {
 				//double unitFloor = Math.floor(unit);
 				double unitCeil = Math.ceil(unit);
 				
-				// TODO need to check how median compute
+				// TODO need to check how median is computed
 				if (unit >= 1 && 100-unitCeil < percentileCutoff){
 					System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
 					return;
