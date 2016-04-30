@@ -123,14 +123,11 @@ public class Utils {
 	 */
 	private static Instances getCLAMITrainingInstances(Instances instancesByCLA,String positiveLabel,double percentileCutoff) {
 		
-		int numMetrics = instancesByCLA.numAttributes()-1;
-		int numInstances = instancesByCLA.numInstances();
-		
 		// Compute medians
 		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instancesByCLA,percentileCutoff);
 		
 		// Metric selection
-		ArrayList<Integer> selectedMetrics = getSelectedMetrics(instancesByCLA,cutoffsForHigherValuesOfAttribute,positiveLabel);
+		String selectedMetrics = getSelectedMetrics(instancesByCLA,cutoffsForHigherValuesOfAttribute,positiveLabel);
 		Instances instancesByCLAMI = getInstancesByRemovingSpecificAttributes(instancesByCLA,selectedMetrics,true);
 		
 		// Instance selection
@@ -145,7 +142,7 @@ public class Utils {
 	 * @param positiveLabel
 	 * @return
 	 */
-	private static ArrayList<Integer> getSelectedMetrics(Instances instances,
+	private static String getSelectedMetrics(Instances instances,
 			double[] cutoffsForHigherValuesOfAttribute,String positiveLabel) {
 		
 		int[] violations = new int[instances.numAttributes()];
@@ -169,17 +166,17 @@ public class Utils {
 		
 		int minViolationScore = Ints.min(violations);
 		
-		ArrayList<Integer> selectedMetrics = new ArrayList<Integer>();
+		String selectedMetrics = "";
 		
 		for(int attrIdx=0; attrIdx < instances.numAttributes(); attrIdx++){
 			if(attrIdx == instances.classIndex())
 				continue;
 			
 			if(violations[attrIdx]==minViolationScore)
-				selectedMetrics.add((attrIdx+1)); // let the start attribute index be 1 
+				selectedMetrics += (attrIdx+1) + ","; // let the start attribute index be 1 
 		}
 		
-		selectedMetrics.add(instances.classIndex() + 1); // add class attribute index
+		selectedMetrics += (instances.classIndex() + 1); // add class attribute index
 		
 		return selectedMetrics;
 	}
@@ -292,22 +289,4 @@ public class Utils {
 
 		return newInstances;
 	}
-	
-	/**
-	 * Get instances with specific attributes
-	 * @param instances
-	 * @param attributeIndices attribute indices (e.g., 1,3,4) first index is 1
-	 * @param invertSelection for invert selection
-	 * @return new instances with specific attributes
-	 */
-	static public Instances getInstancesByRemovingSpecificAttributes(Instances instances,ArrayList<Integer> attributeIndices,boolean invertSelection){
-		
-		String srtIndices = "";
-		for(int index:attributeIndices){
-			srtIndices = srtIndices + index + ",";
-		}
-		
-		return getInstancesByRemovingSpecificAttributes(instances,srtIndices,invertSelection);
-	}
-
 }
