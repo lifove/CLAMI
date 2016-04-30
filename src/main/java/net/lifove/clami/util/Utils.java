@@ -135,9 +135,15 @@ public class Utils {
 		return instancesByCLA;
 	}
 
+	/**
+	 * Get the indices of selected metrics based on violations. (Violations are metric values does not follow their labels. 
+	 * @param instances
+	 * @param cutoffsForHigherValuesOfAttribute
+	 * @param positiveLabel
+	 * @return
+	 */
 	private static ArrayList<Integer> getSelectedMetrics(Instances instances,
 			double[] cutoffsForHigherValuesOfAttribute,String positiveLabel) {
-		
 		
 		int[] violations = new int[instances.numAttributes()];
 		
