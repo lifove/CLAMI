@@ -52,11 +52,20 @@ public class CLAMI {
 			// load an arff file
 			Instances instances = Utils.loadArff(dataFilePath, labelName);
 			
-			// TODO compute valid percentile scope based on the number of instances
-						
-			if (instances !=null)
+			if (instances !=null){
+				double unit = (double) 100/(instances.numInstances());
+				//double unitFloor = Math.floor(unit);
+				double unitCeil = Math.ceil(unit);
+				
+				// TODO need to check how median compute
+				if (unit >= 1 && 100-unitCeil < percentileCutoff){
+					System.err.println("Cutoff percentile must be 0 < and <=" + (100-unitCeil));
+					return;
+				}
+				
 				// do prediction
 				prediction(instances,posLabelValue);
+			}
 		}
 	}
 	
