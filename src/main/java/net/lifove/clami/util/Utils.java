@@ -12,7 +12,6 @@ import java.util.HashSet;
 import org.apache.commons.math3.stat.StatUtils;
 
 import com.google.common.primitives.Doubles;
-import com.google.common.primitives.Ints;
 
 import weka.classifiers.Classifier;
 import weka.core.Instances;
