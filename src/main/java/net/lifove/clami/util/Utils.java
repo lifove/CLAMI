@@ -94,9 +94,11 @@ public class Utils {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instancesByCLA, String positiveLabel,double percentileCutoff) {
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff) {
 		
 		String mlAlgorithm = "weka.classifiers.functions.Logistic";
+		
+		Instances instancesByCLA = Utils.getCLAResult(instances, percentileCutoff,positiveLabel, true);
 		
 		// Compute medians
 		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instancesByCLA,percentileCutoff);
