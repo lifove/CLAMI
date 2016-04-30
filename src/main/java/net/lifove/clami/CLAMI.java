@@ -51,6 +51,8 @@ public class CLAMI {
 			
 			// load an arff file
 			Instances instances = Utils.loadArff(dataFilePath, labelName);
+			
+			// TODO compute valid percentile scope based on the number of instances
 						
 			if (instances !=null)
 				// do prediction
