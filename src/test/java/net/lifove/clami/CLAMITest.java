@@ -17,7 +17,7 @@ public class CLAMITest {
 		String [] arg2={"-h"};
 		runner.runner(arg2);
 		
-		String[] args = {"-f","data/sample.arff","-l","class","-p","buggy","-m","-c","50"};
+		String[] args = {"-f","data/sample.arff","-l","class","-p","buggy","-m","-c","50","--suppress"};
 		runner = new CLAMI();
 		runner.runner(args);
 		
@@ -26,6 +26,14 @@ public class CLAMITest {
 		assertEquals(runner.labelName,args[3]);
 		assertEquals(runner.posLabelValue,args[5]);
 		assertEquals(runner.forCLAMI,true);
+		
+		args[1] = "data/sample3.arff";
+		runner = new CLAMI();
+		runner.runner(args);
+		
+		args[9] = "";
+		runner = new CLAMI();
+		runner.runner(args);
 		
 		args[1] = "data/sample2.arff";
 		args[8] = "50";
@@ -67,7 +75,7 @@ public class CLAMITest {
 		runner = new CLAMI();
 		runner.runner(args);
 		
-		args[8] = "70";
+		args[8] = "70x";
 		runner = new CLAMI();
 		runner.runner(args);
 		
@@ -83,10 +91,12 @@ public class CLAMITest {
 		runner = new CLAMI();
 		runner.runner(args);
 		
-		args[8] = "52";
+		args[9] = "-s";
+		args[8] = "50";
 		runner = new CLAMI();
 		runner.runner(args);
 		
+		args[9] = "";
 		args[8] = "50";
 		runner = new CLAMI();
 		runner.runner(args);

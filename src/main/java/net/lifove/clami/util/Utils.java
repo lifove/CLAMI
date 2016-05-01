@@ -28,20 +28,73 @@ public class Utils {
 	 * @param percentileCutoff cutoff percentile for top and bottom clusters
 	 * @return instances labeled by CLA
 	 */
-	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel) {
-		
-		System.out.println("\nHigher value cutoff > P" + percentileCutoff );
+	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress) {
 		
 		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel);
 		
 		// Print CLA results
+		int TP=0, FP=0,TN=0, FN=0;
 		for(int instIdx = 0; instIdx < instancesByCLA.numInstances(); instIdx++){
-			System.out.println("CLA: Instance " + (instIdx+1) + " predicted as, " + Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) +
+			if(!suppress)
+				System.out.println("CLA: Instance " + (instIdx+1) + " predicted as, " + Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) +
 						", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances,instIdx) + ") ");
+			
+			// compute T/F/P/N for the oroginal instances labeled.
+			if(!Double.isNaN(instances.get(instIdx).classValue())){
+				if(Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx).equals(Utils.getStringValueOfInstanceLabel(instances,instIdx))){
+					if(Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx).equals(positiveLabel))
+						TP++;
+					else
+						TN++;
+				}else{
+					if(Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx).equals(positiveLabel))
+						FP++;
+					else
+						FN++;
+				}
+			}
 		}
+		
+		if (TP+TN+FP+FN>0)
+			printEvaluationResult(TP, TN, FP, FN);
+		else if(suppress)
+			System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
 	}
 
+	/**
+	 * Print prediction performance in terms of TP, TN, FP, FN, precision, recall, and f1.
+	 * @param tP
+	 * @param tN
+	 * @param fP
+	 * @param fN
+	 */
+	private static void printEvaluationResult(int tP, int tN, int fP, int fN) {
+		System.out.println("TP: " + tP);
+		System.out.println("FP: " + fP);
+		System.out.println("TN: " + tN);
+		System.out.println("FN: " + fN);
+		
+		double precision = (double)tP/(tP+fP);
+		System.out.println("Precision: " + precision);
+		
+		double recall = (double)tP/(tP+fN);
+		System.out.println("Recall: " + recall);
+		
+		double f1 = (2*(precision*recall))/(precision+recall);
+		System.out.println("F1: " + f1);
+	}
+
+	/**
+	 * Get instances labeled by CLA
+	 * @param instances
+	 * @param percentileCutoff
+	 * @param positiveLabel
+	 * @return
+	 */
 	private static Instances getInstancesByCLA(Instances instances, double percentileCutoff, String positiveLabel) {
+		
+		System.out.println("\nHigher value cutoff > P" + percentileCutoff );
+		
 		Instances instancesByCLA = new Instances(instances);
 		
 		double[] cutoffsForHigherValuesOfAttribute = getHigherValueCutoffs(instances, percentileCutoff);
@@ -97,7 +150,7 @@ public class Utils {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff) {
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress) {
 		
 		String mlAlgorithm = "weka.classifiers.functions.Logistic";
 		
@@ -140,13 +193,35 @@ public class Utils {
 				Classifier classifier = (Classifier) weka.core.Utils.forName(Classifier.class, mlAlgorithm, null);
 				classifier.buildClassifier(trainingInstancesByCLAMI);
 				
+				// Print CLAMI results
+				int TP=0, FP=0,TN=0, FN=0;
 				for(int instIdx = 0; instIdx < newTestInstances.numInstances(); instIdx++){
 					double predictedLabelIdx = classifier.classifyInstance(newTestInstances.get(instIdx));
-					System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
+					if(!suppress)
+						System.out.println("CLAMI: Instance " + (instIdx+1) + " predicted as, " + 
 							newTestInstances.classAttribute().value((int)predictedLabelIdx)	+
 							//((newTestInstances.classAttribute().indexOfValue(positiveLabel))==predictedLabelIdx?"buggy":"clean") +
 							", (Actual class: " + Utils.getStringValueOfInstanceLabel(newTestInstances,instIdx) + ") ");
+					// compute T/F/P/N for the original instances labeled.
+					if(!Double.isNaN(instances.get(instIdx).classValue())){
+						if(predictedLabelIdx==instances.get(instIdx).classValue()){
+							if(predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel))
+								TP++;
+							else
+								TN++;
+						}else{
+							if(predictedLabelIdx==instances.attribute(instances.classIndex()).indexOfValue(positiveLabel))
+								FP++;
+							else
+								FN++;
+						}
+					}
 				}
+				
+				if (TP+TN+FP+FN>0)
+					printEvaluationResult(TP, TN, FP, FN);
+				else if(suppress)
+					System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
 				
 			} catch (Exception e) {
 				e.printStackTrace();

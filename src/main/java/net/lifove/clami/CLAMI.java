@@ -6,7 +6,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 
 import net.lifove.clami.util.Utils;
 import weka.core.Instances;
@@ -73,9 +72,9 @@ public class CLAMI {
 	void prediction(Instances instances,String positiveLabel){
 		
 		if(!forCLAMI)
-			Utils.getCLAResult(instances, percentileCutoff,positiveLabel);
+			Utils.getCLAResult(instances, percentileCutoff,positiveLabel,suppress);
 		else
-			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff);
+			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress);
 			
 			
 	}
@@ -156,7 +155,7 @@ public class CLAMI {
 			help = cmd.hasOption("h");
 			suppress = cmd.hasOption("s");
 
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			printHelp(options);
 			return false;
 		}
