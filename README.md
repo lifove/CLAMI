@@ -11,4 +11,15 @@ To import into Eclipse, File >> Gradle >> Gradle Project. Set the path where you
 
 # How to run
 
-TBA
+- Download the CLAMI package (CLAMI-vx.x.x.zip) in Releases.
+- Extract the package and go to the `bin' directory
+- Run it
+
+On Linux/Mac, see Help
+
+./CLAMI -h
+
+
+On Windows, see Help
+
+CLAMI.bat -h
