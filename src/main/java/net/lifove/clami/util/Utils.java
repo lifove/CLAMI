@@ -342,7 +342,7 @@ public class Utils {
 			System.err.println("Class label name, " + classAttributeName + ", does not exist! Please, check if the label name is correct.");
 			instances = null;
 		} catch (FileNotFoundException e) {
-			System.err.println("Data file does not exist. Please, check the path again!");
+			System.err.println("Data file, " +path + ", does not exist. Please, check the path again!");
 		} catch (IOException e) {
 			System.err.println("I/O error! Please, try again!");
 		}
