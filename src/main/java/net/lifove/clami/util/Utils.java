@@ -39,7 +39,7 @@ public class Utils {
 				System.out.println("CLA: Instance " + (instIdx+1) + " predicted as, " + Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx) +
 						", (Actual class: " + Utils.getStringValueOfInstanceLabel(instances,instIdx) + ") ");
 			
-			// compute T/F/P/N for the oroginal instances labeled.
+			// compute T/F/P/N for the original instances labeled.
 			if(!Double.isNaN(instances.get(instIdx).classValue())){
 				if(Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx).equals(Utils.getStringValueOfInstanceLabel(instances,instIdx))){
 					if(Utils.getStringValueOfInstanceLabel(instancesByCLA,instIdx).equals(positiveLabel))
