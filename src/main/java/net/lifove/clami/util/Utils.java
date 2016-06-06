@@ -119,7 +119,7 @@ public class Utils {
 		double cutoffOfKForTopClusters = Utils.getMedian(new ArrayList<Double>(new HashSet<Double>(Arrays.asList(K))));
 		
 		for(int instIdx = 0; instIdx < instances.numInstances(); instIdx++){
-			if(K[instIdx]>=cutoffOfKForTopClusters)
+			if(K[instIdx]>cutoffOfKForTopClusters)
 				instancesByCLA.instance(instIdx).setClassValue(positiveLabel);
 			else
 				instancesByCLA.instance(instIdx).setClassValue(getNegLabel(instancesByCLA,positiveLabel));
