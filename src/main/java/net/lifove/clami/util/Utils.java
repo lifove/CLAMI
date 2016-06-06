@@ -14,6 +14,7 @@ import org.apache.commons.math3.stat.StatUtils;
 import com.google.common.primitives.Doubles;
 
 import weka.classifiers.Classifier;
+import weka.classifiers.evaluation.Evaluation;
 import weka.core.Instances;
 import weka.filters.Filter;
 import weka.filters.unsupervised.attribute.Remove;
@@ -218,8 +219,16 @@ public class Utils {
 					}
 				}
 				
-				if (TP+TN+FP+FN>0)
+				Evaluation eval = new Evaluation(trainingInstancesByCLAMI);
+				eval.evaluateModel(classifier, newTestInstances);
+				
+				
+				
+				if (TP+TN+FP+FN>0){
 					printEvaluationResult(TP, TN, FP, FN);
+					// print AUC value
+					System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+				}
 				else if(suppress)
 					System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
 				
