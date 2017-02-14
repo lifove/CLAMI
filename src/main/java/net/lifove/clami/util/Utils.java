@@ -26,11 +26,25 @@ public class Utils {
 	/**
 	 * Get CLA result
 	 * @param instances
-	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param percentileCutoff: cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 * @param suppress detailed prediction results
 	 * @return instances labeled by CLA
 	 */
 	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress) {
-		
+		getCLAResult(instances,percentileCutoff,positiveLabel,suppress,false); // no experimental as default
+	}
+	
+	/**
+	 * Get CLA result
+	 * @param instances
+	 * @param percentileCutoff cutoff percentile for top and bottom clusters
+	 * @param positiveLabel positive label string value
+	 * @param suppress detailed prediction results
+	 * @param experimental option to display a result in a line;
+	 * @return instances labeled by CLA
+	 */
+	public static void getCLAResult(Instances instances,double percentileCutoff,String positiveLabel,boolean suppress,boolean experimental) {
 		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel);
 		
 		// Print CLA results
@@ -57,7 +71,7 @@ public class Utils {
 		}
 		
 		if (TP+TN+FP+FN>0)
-			printEvaluationResult(TP, TN, FP, FN);
+			printEvaluationResult(TP, TN, FP, FN, experimental);
 		else if(suppress)
 			System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
 	}
@@ -69,20 +83,24 @@ public class Utils {
 	 * @param fP
 	 * @param fN
 	 */
-	private static void printEvaluationResult(int tP, int tN, int fP, int fN) {
-		System.out.println("TP: " + tP);
-		System.out.println("FP: " + fP);
-		System.out.println("TN: " + tN);
-		System.out.println("FN: " + fN);
+	private static void printEvaluationResult(int tP, int tN, int fP, int fN, boolean experimental) {
 		
 		double precision = (double)tP/(tP+fP);
-		System.out.println("Precision: " + precision);
-		
 		double recall = (double)tP/(tP+fN);
-		System.out.println("Recall: " + recall);
-		
 		double f1 = (2*(precision*recall))/(precision+recall);
-		System.out.println("F1: " + f1);
+		
+		if(!experimental){
+			System.out.println("TP: " + tP);
+			System.out.println("FP: " + fP);
+			System.out.println("TN: " + tN);
+			System.out.println("FN: " + fN);
+			
+			System.out.println("Precision: " + precision);
+			System.out.println("Recall: " + recall);
+			System.out.println("F1: " + f1);
+		}else{
+			System.out.print(precision + "," + recall + "," + f1);
+		}
 	}
 
 	/**
@@ -94,7 +112,7 @@ public class Utils {
 	 */
 	private static Instances getInstancesByCLA(Instances instances, double percentileCutoff, String positiveLabel) {
 		
-		System.out.println("\nHigher value cutoff > P" + percentileCutoff );
+		//System.out.println("\nHigher value cutoff > P" + percentileCutoff );
 		
 		Instances instancesByCLA = new Instances(instances);
 		
@@ -152,6 +170,16 @@ public class Utils {
 	 * @param positiveLabel
 	 */
 	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress) {
+		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false); //no experimental as default
+	}
+	
+	/**
+	 * Get CLAMI result. Since CLAMI is the later steps of CLA, to get instancesByCLA use getCLAResult.
+	 * @param testInstances
+	 * @param instancesByCLA
+	 * @param positiveLabel
+	 */
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental) {
 		
 		String mlAlgorithm = "weka.classifiers.functions.Logistic";
 		
@@ -223,12 +251,13 @@ public class Utils {
 				Evaluation eval = new Evaluation(trainingInstancesByCLAMI);
 				eval.evaluateModel(classifier, newTestInstances);
 				
-				
-				
 				if (TP+TN+FP+FN>0){
-					printEvaluationResult(TP, TN, FP, FN);
+					printEvaluationResult(TP, TN, FP, FN, experimental);
 					// print AUC value
-					System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+					if(!experimental)
+						System.out.println("AUC: " + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
+					else
+						System.out.print("," + eval.areaUnderROC(newTestInstances.classAttribute().indexOfValue(positiveLabel)));
 				}
 				else if(suppress)
 					System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");

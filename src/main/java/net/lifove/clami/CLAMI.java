@@ -1,5 +1,10 @@
 package net.lifove.clami;
 
+import java.io.File;
+import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -26,6 +31,7 @@ public class CLAMI {
 	boolean forCLAMI = false;
 	boolean help = false;
 	boolean suppress = false;
+	String experimental;
 
 	public static void main(String[] args) {
 		
@@ -49,6 +55,13 @@ public class CLAMI {
 				return;
 			}
 			
+			// exit experimental option format is not correct
+			if(experimental!=null && !checkExperimentalOption(experimental)){
+				System.err.println("Experimental option format is incorrect. Option format: [# of folds]:[# of repetition]. "
+						+ "E.g, -e 2:500 (Two-fold cross validation 500 repetition");
+				return;
+			}
+			
 			// load an arff file
 			Instances instances = Utils.loadArff(dataFilePath, labelName);
 			
@@ -63,18 +76,51 @@ public class CLAMI {
 					return;
 				}
 				
-				// do prediction
-				prediction(instances,posLabelValue);
+				if (experimental==null || experimental.equals("")){
+					// do prediction
+					prediction(instances,posLabelValue,false);
+				}else{
+					experiment(instances,posLabelValue);
+				}
 			}
 		}
 	}
 	
-	void prediction(Instances instances,String positiveLabel){
+	private boolean checkExperimentalOption(String expOpt) {	
+		Pattern pattern=Pattern.compile("^[0-9]+:[0-9]");
+		Matcher m = pattern.matcher(expOpt);
+		return m.find();
+	}
+
+	private void experiment(Instances instances, String posLabelValue) {
+		
+		String[] splitOptions = experimental.split(":");
+		int folds = Integer.parseInt(splitOptions[0]);
+		int numRuns = Integer.parseInt(splitOptions[1]);
+		
+		String source = dataFilePath.substring(dataFilePath.lastIndexOf(File.separator)+1).replace(".arff", "");
+		
+		for(int repeat=0;repeat < numRuns;repeat++){
+			
+			// randomize with different seed for each iteration
+			instances.randomize(new Random(repeat)); 
+			instances.stratify(folds);
+			
+			for(int fold = 0; fold < folds; fold++){
+				System.out.print(repeat + "," +fold + "," + source + ",");
+				Instances targetInstances = instances.testCV(folds, fold);
+				prediction(targetInstances,posLabelValue,true);
+				System.out.println();
+			}
+		}
+	}
+
+	void prediction(Instances instances,String positiveLabel,boolean isExperimental){
 		
 		if(!forCLAMI)
-			Utils.getCLAResult(instances, percentileCutoff,positiveLabel,suppress);
+			Utils.getCLAResult(instances, percentileCutoff,positiveLabel,suppress,isExperimental);
 		else
-			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress);
+			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental);
 			
 			
 	}
@@ -128,11 +174,19 @@ public class CLAMI {
 		        		+ "it will show prediction results in terms of precision, recall, and f-measure for evaluation puerpose.")
 		        .hasArg()
 		        .required()
-		        .argName("attribute value")
+		        .argName("postive label value")
 		        .build());
 		
 		options.addOption(Option.builder("m").longOpt("clami")
 		        .desc("Run CLAMI instead of CLA")
+		        .build());
+		
+		options.addOption(Option.builder("e").longOpt("experimental")
+		        .desc("Options for experimenets to compare CLA/CLAMI with other cross-project defect prediction approaches by k-fold cross validation. "
+		        		+ "Support k-fold cross validation n times. "
+		        		+ "Option format: [# of folds]:[# of repetition]. E.g, -e 2:500 (Two-fold cross validation 500 repetition")
+		        .hasArg()
+		        .argName("#folds:#repeat")
 		        .build());
 
 		return options;
@@ -155,6 +209,7 @@ public class CLAMI {
 			forCLAMI = cmd.hasOption("m");
 			help = cmd.hasOption("h");
 			suppress = cmd.hasOption("s");
+			experimental = cmd.getOptionValue("e");
 
 		} catch (Exception e) {
 			printHelp(options);
