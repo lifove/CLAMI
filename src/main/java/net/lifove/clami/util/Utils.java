@@ -169,8 +169,8 @@ public class Utils {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress) {
-		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false); //no experimental as default
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff,boolean suppress,String mlAlg) {
+		getCLAMIResult(testInstances,instances,positiveLabel,percentileCutoff,suppress,false,mlAlg); //no experimental as default
 	}
 	
 	/**
@@ -179,9 +179,9 @@ public class Utils {
 	 * @param instancesByCLA
 	 * @param positiveLabel
 	 */
-	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental) {
+	public static void getCLAMIResult(Instances testInstances, Instances instances, String positiveLabel,double percentileCutoff, boolean suppress, boolean experimental, String mlAlg) {
 		
-		String mlAlgorithm = "weka.classifiers.functions.Logistic";
+		String mlAlgorithm = mlAlg.equals("")?"weka.classifiers.functions.Logistic":mlAlg;
 		
 		Instances instancesByCLA = getInstancesByCLA(instances, percentileCutoff, positiveLabel);
 		
@@ -263,7 +263,9 @@ public class Utils {
 					System.out.println("No labeled instances in the arff file. To see detailed prediction results, try again without the suppress option  (-s,--suppress)");
 				
 			} catch (Exception e) {
+				System.err.println("Specify the correct Weka machine learing classifier with a fully qualified name. E.g., weka.classifiers.functions.Logistic");
 				e.printStackTrace();
+				System.exit(0);
 			}
 		}else{
 			System.err.println("Dataset is not proper to build a CLAMI model! Dataset does not follow the assumption, i.e. the higher metric value, the more bug-prone.");

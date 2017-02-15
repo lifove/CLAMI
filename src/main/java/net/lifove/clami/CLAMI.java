@@ -32,6 +32,7 @@ public class CLAMI {
 	boolean help = false;
 	boolean suppress = false;
 	String experimental;
+	String mlAlg="";
 
 	public static void main(String[] args) {
 		
@@ -120,7 +121,7 @@ public class CLAMI {
 		if(!forCLAMI)
 			Utils.getCLAResult(instances, percentileCutoff,positiveLabel,suppress,isExperimental);
 		else
-			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental);
+			Utils.getCLAMIResult(instances,instances,positiveLabel,percentileCutoff,suppress,isExperimental,mlAlg);
 			
 			
 	}
@@ -188,6 +189,12 @@ public class CLAMI {
 		        .hasArg()
 		        .argName("#folds:#repeat")
 		        .build());
+		
+		options.addOption(Option.builder("a").longOpt("mlalgorithm")
+		        .desc("Specify weka classifier (Default: weka.classifiers.functions.Logistic)")
+		        .hasArg()
+		        .argName("Fully qualalified weka classifier name")
+		        .build());
 
 		return options;
 
@@ -210,6 +217,7 @@ public class CLAMI {
 			help = cmd.hasOption("h");
 			suppress = cmd.hasOption("s");
 			experimental = cmd.getOptionValue("e");
+			mlAlg = cmd.getOptionValue("a");
 
 		} catch (Exception e) {
 			printHelp(options);
